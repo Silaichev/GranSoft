@@ -1,3 +1,5 @@
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -12,6 +14,9 @@ public class MyForm extends JFrame {
     private static JFrame frame;
     private static JFrame secFrame;
     private static List<Integer> mass;
+    private static ArrayList<JButton> col;
+
+    private static SwingWorker SW;
 
     public static void intro(Container pane) {
 
@@ -29,7 +34,7 @@ public class MyForm extends JFrame {
         text.setBounds(360, 260, 80, 30);
         pane.add(text);
 
-        JButton btn = new JButton("Button");
+        JButton btn = new JButton("Enter");
         btn.setBounds(360, 300, 80, 30);
         pane.add(btn);
 
@@ -51,7 +56,7 @@ public class MyForm extends JFrame {
 
     public static void addComponentsToPane(Container pane, int num) {
 
-        ArrayList<JButton> col = new ArrayList<>();
+        col = new ArrayList<>();
 
         mass = new ArrayList<Integer>();
 
@@ -65,7 +70,6 @@ public class MyForm extends JFrame {
         }
 
         mass.set(randPosition, randNum);
-        System.out.println(mass.get(randPosition));
         col.get(randPosition).setText(String.valueOf(mass.get(randPosition)));
 
         col.forEach(j -> j.setForeground(Color.WHITE));
@@ -99,7 +103,18 @@ public class MyForm extends JFrame {
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Collections.reverse(mass);
+
+
+                SW = new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        quickSort(col, 0, col.size() - 1);
+                        return null;
+                    }
+                };
+
+                SW.execute();
+                /*Collections.reverse(mass);*/
                 for (int i = 0; i < col.size(); i++) {
                     col.get(i).setText(String.valueOf(mass.get(i)));
                 }
@@ -125,9 +140,61 @@ public class MyForm extends JFrame {
 
     }
 
+    public static void quickSort(List<JButton> array, int low, int high) throws InterruptedException {
+
+        if (array.size() == 0)
+            return;//завершить выполнение если длина массива равна 0
+        if (low >= high)
+            return;//завершить выполнение если уже нечего делить
+        // выбрать опорный элемент
+        int middle = low + (high - low) / 2;
+        int opora = Integer.parseInt(array.get(middle).getText());
+        // разделить на подмассивы, который больше и меньше опорного элемента
+
+        int i = low, j = high;
+        //Illuminating process
+        illuminate(i,middle,j);
+
+        while (i <= j) {
+            illuminate(i,middle,j);
+            while (Integer.parseInt(array.get(i).getText()) < opora) {
+                i++;
+                illuminate(i,middle,j);
+            }
+            while (Integer.parseInt(array.get(j).getText()) > opora) {
+                j--;
+                illuminate(i,middle,j);
+            }
+            if (i <= j) {//меняем местами
+                illuminate(i,middle,j);
+                String temp = array.get(i).getText();
+                array.get(i).setText(array.get(j).getText());
+                array.get(j).setText(temp);
+                i++;
+                j--;
+            }
+        }
+        // вызов рекурсии для сортировки левой и правой части
+        if (low < j)
+            quickSort(array, low, j);
+        if (high > i)
+            quickSort(array, i, high);
+    }
+
+    private  static void illuminate(int i,int middle, int j) throws InterruptedException {
+        col.get(i).setBackground(Color.GREEN);
+        col.get(j).setBackground(Color.GREEN);
+        col.get(middle).setBackground(Color.RED);
+        Thread.sleep(500);
+        col.get(i).setBackground(Color.BLUE);
+        col.get(j).setBackground(Color.BLUE);
+        col.get(middle).setBackground(Color.BLUE);
+    }
+
     public static void createAndStartIntro() {
         frame = new JFrame("Intro");
         frame.setResizable(false);
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         intro(frame.getContentPane());
         Insets insets = frame.getInsets();
@@ -138,20 +205,18 @@ public class MyForm extends JFrame {
     }
 
     private static void createAndShowGUI(int num) {
+
         if (num == 0) {
             JOptionPane.showMessageDialog(null, "You can`t chose zero");
         } else {
             //Create and set up the window.
             secFrame = new JFrame("Random numbers");
-
             secFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
             //Set up the content pane.
             addComponentsToPane(secFrame.getContentPane(), num);
 
             //Size and display the window.
             Insets insets = secFrame.getInsets();
-
             secFrame.setSize(800 + insets.left + insets.right,
                     600 + insets.top + insets.bottom);
             secFrame.setResizable(false);
