@@ -100,21 +100,20 @@ public class MyForm extends JFrame {
         JButton btn = new JButton("Sort");
         btn.setFont(new Font("Dialog", Font.PLAIN, 10));
         btn.setBounds(730, 20, 60, 30);
+        SW = new SwingWorker() {
+            @Override
+            protected Object doInBackground() throws Exception {
+                quickSort(col, 0, col.size() - 1);
+                return null;
+            }
+        };
         btn.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
-
-
-                SW = new SwingWorker() {
-                    @Override
-                    protected Object doInBackground() throws Exception {
-                        quickSort(col, 0, col.size() - 1);
-                        return null;
-                    }
-                };
-
+                Collections.reverse(mass);
                 SW.execute();
-                /*Collections.reverse(mass);*/
+
                 for (int i = 0; i < col.size(); i++) {
                     col.get(i).setText(String.valueOf(mass.get(i)));
                 }
